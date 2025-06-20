@@ -7,6 +7,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import com.google.gson.FieldNamingPolicy;
@@ -22,9 +24,25 @@ public class PrincipalComBusca {
 	public static void main(String[] args) throws IOException, InterruptedException {
 
 		Scanner leitura = new Scanner(System.in);
-		System.out.println("Digite o nome do filme");
+		String busca = "";
 
-		var busca = leitura.nextLine();
+		List<Titulo> titulos = new ArrayList<Titulo>();
+		
+
+		Gson gson = new GsonBuilder().
+				setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).
+				create();
+		
+		while(!busca.equalsIgnoreCase("sair")) {
+			
+		
+		System.out.println("Digite o nome do filme");
+		busca = leitura.nextLine();
+		
+		if(busca.equalsIgnoreCase("sair")) {
+			break;
+		}
+
 		String endereco = "http://www.omdbapi.com/?t=" + busca.replace(" ", "+") + "&apikey=5e9b0ca8";
 		try {			
 			HttpClient client = HttpClient.newHttpClient();
@@ -39,9 +57,6 @@ public class PrincipalComBusca {
 			String json = response.body();
 			System.out.println(json);
 
-			Gson gson = new GsonBuilder().
-					setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).
-					create();
 
 
 
@@ -52,9 +67,7 @@ public class PrincipalComBusca {
 			Titulo meuTitulo = new Titulo(meuTituloOmdb);
 			System.out.println(meuTitulo);
 			
-			FileWriter escrita = new FileWriter("filmes.txt");
-			escrita.write(meuTitulo.toString());
-			escrita.close();
+			titulos.add(meuTitulo);
 		} catch (NumberFormatException e) {
 			System.out.println("Aconteceu um erro");
 			System.out.println(e.getMessage());
@@ -65,7 +78,14 @@ public class PrincipalComBusca {
 			System.out.println(e.getMessage());
 		}
 
-
+		}
+		
+		System.out.println(titulos);
+		
+		FileWriter escrita = new FileWriter("filmes.json");
+		escrita.write(gson.toJson(titulos));
+		escrita.close();
+		System.out.println("O programa foi encerrado!");
 	}
 
 }
